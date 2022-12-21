@@ -13,8 +13,10 @@
         {
           devShell = pkgs.mkShell rec {
             name = "changeme";
-            buildInputs = [
-              pkgs.nixFlakes
+            buildInputs = with pkgs; [
+              # some
+              # packages
+              # here
             ];
           };
         }));
