@@ -12,6 +12,7 @@
       flake = {};
       systems = ["x86_64-linux"];
       perSystem = {pkgs, ...}: {
+        legacyPackages = pkgs;
         devShells.default = pkgs.mkShell {
           name = "changeme";
           buildInputs = with pkgs; [
