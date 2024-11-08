@@ -1,14 +1,18 @@
 {
   description = "meatcar's nix flake templates";
 
-  outputs = { self }: {
+  outputs = {self}: {
     templates = {
-      direnv-tmux-project = {
+      flake-basic = {
         path = ./direnv-tmux-project;
         description = "A project structure that uses direnv and tmux";
       };
+      flake-modules = {
+        path = ./flake-modules;
+        description = "A project structure that uses flake modules";
+      };
     };
 
-    defaultTemplate = self.templates.direnv-tmux-project;
+    defaultTemplate = self.templates.flake-modules;
   };
 }
