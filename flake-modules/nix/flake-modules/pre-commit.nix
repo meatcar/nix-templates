@@ -2,6 +2,7 @@
   perSystem = {
     config,
     pkgs,
+    imputs',
     ...
   }: {
     treefmt.config = {
@@ -16,6 +17,13 @@
     pre-commit.settings = {
       hooks = {
         treefmt.enable = true;
+        ess = {
+          enable = true;
+          name = "ess";
+          package = inputs'.ess.packages.default;
+          entry = "ess --sample-file=.env.sample";
+          pass_filenames = false;
+        };
       };
     };
   };
