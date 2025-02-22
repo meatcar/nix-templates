@@ -2,7 +2,7 @@
   perSystem = {
     config,
     pkgs,
-    imputs',
+    inputs',
     ...
   }: {
     treefmt.config = {
