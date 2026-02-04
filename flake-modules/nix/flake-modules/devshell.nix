@@ -17,7 +17,7 @@
         ++ [
           nil # for nix completion
         ]
-        ++ [nodejs];
+        ++ [ bun ];
     };
   };
 }
