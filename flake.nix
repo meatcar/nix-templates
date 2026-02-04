@@ -4,8 +4,8 @@
   outputs = {self}: {
     templates = {
       flake-basic = {
-        path = ./direnv-tmux-project;
-        description = "A project structure that uses direnv and tmux";
+        path = ./basic;
+        description = "A basic project structure";
       };
       flake-modules = {
         path = ./flake-modules;
