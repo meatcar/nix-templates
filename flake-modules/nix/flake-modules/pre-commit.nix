@@ -11,7 +11,7 @@
     };
     formatter = config.treefmt.build.wrapper;
     treefmt.config.programs = {
-      alejandra.enable = true;
+      nixfmt.enable = true;
     };
     pre-commit.check.enable = true;
     pre-commit.settings = {
