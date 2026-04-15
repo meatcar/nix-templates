@@ -20,7 +20,7 @@
           with pkgs;
           (builtins.attrValues config.treefmt.build.programs)
           ++ [
-            nil # for nix completion
+            nil # for nix
           ]
           ++ [ bun ];
       };
