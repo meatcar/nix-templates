@@ -6,6 +6,7 @@
   ];
   perSystem =
     {
+      inputs',
       config,
       pkgs,
       ...
@@ -25,7 +26,8 @@
         # highlight antipaterns in nix code
         statix.enable = true;
         ## Everything else
-        prettier.enable = true;
+        oxfmt.enable = true;
+        oxfmt.package = inputs'.nixpkgs-unstable.legacyPackages.oxfmt;
       };
     };
 }
