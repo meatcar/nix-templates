@@ -1,54 +1,32 @@
 ## Codebase: Direnv + Nix + Bun
 
-## Layout:
-
 ```
-flake.nix           # inputs only.
-.envrc              # environment init
-nix/flake-modules/  # flake parts
-  /devshell.nix     # development shell.
-  /treefmt.nix      # single master formatter.
+flake.nix          # inputs only
+.envrc             # env init
+nix/flake-modules/ # flake parts: devshell.nix, treefmt.nix
 ```
 
-## Principles:
+## Principles
 
-- Apply Red/Green TDD.
-- Use Conventional Commits with consistent scopes. Short titles, descriptive, and non-repetitive.
-- Commits should be atomic, testable, logically distinct.
+- Red/Green TDD. Conventional Commits: consistent scopes, short titles. Atomic, testable, logically distinct commits.
+- Ask before network or out-of-workspace actions.
 
-## Commands
-
-Repo root:
+## Commands (repo root)
 
 - `direnv exec .`: run commands
-- `nix fmt`: format
-- `nix flake check`: validate flake outputs.
-
-Ask before network or out-of-workspace actions.
+- `nix fmt`: format (run after every source edit)
+- `nix flake check`: validate flake outputs
 
 ## Nix
 
-- Use `inputs'.nixpkgs-unstable.legacyPackages` only for intentional unstable
-  packages.
+- Use `inputs'.nixpkgs-unstable.legacyPackages` only for intentional unstable packages.
+- Formatters (`treefmt-nix`): `nixfmt`, `deadnix`+`statix` (lint), `oxfmt`.
 
-Run `nix flake check` to enforce via `treefmt-nix`:
+## Bun / TypeScript
 
-- Nix: `nixfmt`
-- Nix cleanup/lint: `deadnix`, `statix`
-- Other supported files: `oxfmt`
-- Other flake checks.
+See `./node_modules/bun-types/CLAUDE.md`.
 
-Run `nix fmt` after source edits.
-
-## Bun / Typescript
-
-See `./node_modules/bun-types/CLAUDE.md`
-
-Maximal code style/quality is enforced via `bun check` that runs:
+Code quality enforced via `bun check`, running:
 
 - `bun format`: `treefmt`
-- `bun lint`:
-  - `oxlint`
-    - Type aware,
-    - Categories `correctness`, `suspicious`, and `perf` error.
-  - `fallow`: duplicates, code health
+- `bun lint`: `oxlint` (type-aware; `correctness`/`suspicious`/`perf` error) + `fallow` (duplicates, code health)
