@@ -11,7 +11,8 @@
     {
       legacyPackages = pkgs;
       devShells.default = pkgs.mkShell {
-        name = "changeme";
+        # TODO: change to project name
+        name = "devshell";
         inputsFrom = [
           config.flake-root.devShell
           config.treefmt.build.devShell
@@ -20,7 +21,7 @@
           with pkgs;
           (builtins.attrValues config.treefmt.build.programs)
           ++ [
-            nil # for nix
+            nil # nix lsp
           ]
           ++ [ bun ];
       };
