@@ -6,11 +6,11 @@
     {
       templates = {
         flake-basic = {
-          path = ./templates/nix/flake-basic;
+          path = ./templates/flake-basic;
           description = "A basic project structure";
         };
         flake-modules = {
-          path = ./templates/nix/flake-modules;
+          path = ./templates/flake-modules;
           description = "A project structure that uses flake modules";
         };
       };
