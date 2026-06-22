@@ -27,8 +27,6 @@
         statix.enable = true;
         ## Everything else
         oxfmt.enable = true;
-        # TODO: switch to stable after nixos 26.05 ships
-        oxfmt.package = inputs'.nixpkgs-unstable.legacyPackages.oxfmt;
       };
     };
 }
