@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: DeterminateSystems/nix-installer-action@v20
+
+      - uses: DeterminateSystems/magic-nix-cache-action@v13
+
+      # Every step runs in the devshell: treefmt and the nix formatters live there.
+      - name: Install dependencies
+        run: nix develop --command bun install --frozen-lockfile
+
+      - name: Check
+        run: nix develop --command bun run check
+
+      - name: Test
+        run: nix develop --command bun test

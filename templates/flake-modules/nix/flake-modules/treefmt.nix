@@ -6,7 +6,6 @@
   ];
   perSystem =
     {
-      inputs',
       config,
       pkgs,
       ...
@@ -15,6 +14,18 @@
       treefmt.config = {
         inherit (config.flake-root) projectRootFile;
         package = pkgs.treefmt;
+        # treefmt walks git when the tree is a repo, and the whole directory when it
+        # is not -- which a freshly `nix flake init`ed project is. Without these it
+        # reformats node_modules on the first `check`.
+        settings.global.excludes = [
+          "node_modules/**"
+          "coverage/**"
+          "dist/**"
+          ".direnv/**"
+          "*.lock"
+          "*.lockb"
+          "flake.lock"
+        ];
       };
       formatter = config.treefmt.build.wrapper;
       treefmt.config.programs = {
