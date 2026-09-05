@@ -38,7 +38,7 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 results/
 
 # ai
-.agents/
+.amp/portals/
 .codex/
 .claude/
 

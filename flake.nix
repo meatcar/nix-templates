@@ -1,9 +1,18 @@
 {
   description = "meatcar's nix flake templates";
 
+  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
+
   outputs =
-    { self }:
+    { self, nixpkgs }:
     {
+      devShells.x86_64-linux.default = nixpkgs.legacyPackages.x86_64-linux.mkShell {
+        packages = with nixpkgs.legacyPackages.x86_64-linux; [
+          bun
+          shellcheck
+        ];
+      };
+
       templates = {
         flake-basic = {
           path = ./templates/flake-basic;

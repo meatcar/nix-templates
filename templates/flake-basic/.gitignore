@@ -5,6 +5,6 @@
 results/
 
 # ai
-.agents/
+.amp/portals/
 .codex/
 .claude/
