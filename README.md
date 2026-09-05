@@ -67,8 +67,10 @@ activation, subdirectories and unrelated directories, runs resume, Bun tests
 where present, and `nix flake check --no-build`. Setup already builds the shell.
 The test does not build treefmt's check, which creates an internal Git commit
 and cannot use Amp's system-wide signing helper inside a Nix build.
-Template lifecycle files are standalone
-copies, checked against the root scripts to prevent drift.
+Each template contains standalone lifecycle scripts, checked against each other
+to prevent drift. The root `.agents/setup` and `.agents/resume` symlink to the
+`flake-modules` scripts. Keep `.agents/` itself a real directory so the scripts
+resolve the repository root from their invocation paths.
 
 The login-shell integration follows `alipes-inc/alipes24`. Its Amp project
 `dnka/alipes24` has no project-level pre-setup script. Application-specific
