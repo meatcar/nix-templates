@@ -6,7 +6,6 @@
   ];
   perSystem =
     {
-      inputs',
       config,
       pkgs,
       ...
