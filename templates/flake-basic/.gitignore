@@ -5,6 +5,5 @@
 results/
 
 # ai
-.agents/
 .codex/
 .claude/
