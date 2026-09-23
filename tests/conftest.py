@@ -1,9 +1,11 @@
 import json
 import os
+import shutil
 import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 
 
 class Sandbox:
@@ -154,3 +156,62 @@ def sandbox(tmp_path, config, prepared_sandbox):
         check=True,
     )
     return sandbox
+
+
+@pytest.fixture
+def sandbox_project(sandbox):
+    sandbox.run(
+        "nix", "flake", "init", "-t", f"path:{sandbox.config['source']}#sandbox"
+    )
+    sandbox.run("nix", "profile", "install", "--offline", sandbox.config["nix"])
+    sandbox.task = (
+        sandbox.home
+        / f".local/share/sandbox/task-v{sandbox.config['taskVersion']}/task"
+    )
+    sandbox.task.parent.mkdir(parents=True)
+    sandbox.task.symlink_to(sandbox.config["task"])
+    for name in ("setup", "resume"):
+        (sandbox.project / ".agents" / name).chmod(0o755)
+    return sandbox
+
+
+@pytest.fixture
+def configured_project(sandbox_project):
+    sandbox = sandbox_project
+    taskfile_path = sandbox.project / ".agents/Taskfile.yml"
+    taskfile = yaml.safe_load(taskfile_path.read_text())
+    taskfile["includes"] = {"project": "./project.yml"}
+    for name, task in taskfile["tasks"].items():
+        if name != "work":
+            task["cmds"] = [{"task": f"project:{name}"}]
+    work = taskfile["tasks"]["work"]["cmds"]
+    deps_index = work.index({"task": "deps"})
+    work.insert(deps_index + 1, {"task": "project:post_deps"})
+    work.insert(deps_index, {"task": "project:pre_deps"})
+    taskfile_path.write_text(yaml.safe_dump(taskfile))
+    shutil.copyfile(
+        Path(__file__).parent / "fixtures/project.yml",
+        sandbox.project / ".agents/project.yml",
+    )
+    (sandbox.project / ".env").write_text(
+        "SANDBOX_TEST_DOTENV=stale\nSANDBOX_TEST_REMOVED=old\n"
+    )
+    sandbox.run("direnv", "allow", ".")
+    return sandbox
+
+
+@pytest.fixture
+def download_probe(sandbox_project):
+    sandbox = sandbox_project
+    binaries = sandbox.project / "host-bin"
+    binaries.mkdir()
+    for command in (Path(sandbox.config["tools"]) / "bin").iterdir():
+        if command.name != "curl":
+            (binaries / command.name).symlink_to(command)
+    curl = binaries / "curl"
+    curl.write_text(
+        '#!/bin/bash\ntouch "$HOME/download-attempted"\n'
+        'printf "corrupt archive" > "${@: -1}"\n'
+    )
+    curl.chmod(0o755)
+    return {"PATH": sandbox.guest_project + "/host-bin"}

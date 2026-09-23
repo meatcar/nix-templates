@@ -47,6 +47,7 @@ let
       source = self.outPath;
       closure = toString closure;
       tools = toString tools;
+      nix = toString pkgs.nix;
       task = "${pkgs.go-task}/bin/task";
       taskVersion = pkgs.go-task.version;
       certificates = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
