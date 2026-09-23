@@ -9,17 +9,23 @@ import yaml
 
 
 class Sandbox:
-    def __init__(self, path, config, template):
+    def __init__(self, path, config, template, *, cold_root=None):
         self.path = path
         self.config = config
         self.template = template
+        self.cold_root = cold_root
         self.home = path / "home"
         self.project = path / "project"
         for directory in (self.home, self.project, path / "nix"):
             directory.mkdir()
         self.guest_project = "/work/project with spaces"
+        self.guest_home = "/root" if cold_root else "/home/user with spaces ' $HOME"
 
-    def run(self, *args, env=None, check=True, stdin=None):
+    def make_writable(self):
+        """Let pytest remove private store files without following their symlinks."""
+        subprocess.run(["chmod", "-R", "u+w", str(self.path)], check=True)
+
+    def run(self, *args, env=None, check=True, stdin=None, network=False, timeout=120):
         config = self.config
         command = [
             "bwrap",
@@ -31,14 +37,31 @@ class Sandbox:
             "--die-with-parent",
             "--new-session",
             "--clearenv",
-            "--bind",
-            str(self.path / "nix"),
-            "/nix",
         ]
-        for store_path in (
-            (Path(config["closure"]) / "store-paths").read_text().splitlines()
-        ):
-            command.extend(["--ro-bind", store_path, store_path])
+        if network:
+            assert self.cold_root, "Only cold bootstrap may use the network"
+            command.extend(["--share-net"])
+        if self.cold_root:
+            command.extend(["--ro-bind", self.cold_root, "/"])
+            command.extend(["--ro-bind", "/etc/resolv.conf", "/etc/resolv.conf"])
+        command.extend(["--bind", str(self.path / "nix"), "/nix"])
+        if not self.cold_root:
+            for store_path in (
+                (Path(config["closure"]) / "store-paths").read_text().splitlines()
+            ):
+                command.extend(["--ro-bind", store_path, store_path])
+            command.extend(
+                [
+                    "--symlink",
+                    config["tools"] + "/bin",
+                    "/bin",
+                    "--dir",
+                    "/usr",
+                    "--symlink",
+                    config["tools"] + "/bin",
+                    "/usr/bin",
+                ]
+            )
         command.extend(
             [
                 "--proc",
@@ -47,20 +70,14 @@ class Sandbox:
                 "/dev",
                 "--tmpfs",
                 "/tmp",
+                "--tmpfs",
+                "/work",
                 "--bind",
                 str(self.home),
-                "/root",
+                self.guest_home,
                 "--bind",
                 str(self.project),
                 self.guest_project,
-                "--symlink",
-                config["tools"] + "/bin",
-                "/bin",
-                "--dir",
-                "/usr",
-                "--symlink",
-                config["tools"] + "/bin",
-                "/usr/bin",
                 "--ro-bind",
                 config["certificates"],
                 "/etc/ssl/certs/ca-certificates.crt",
@@ -69,13 +86,20 @@ class Sandbox:
             ]
         )
         environment = {
-            "HOME": "/root",
+            "HOME": self.guest_home,
             "USER": "root",
             "PATH": config["tools"] + "/bin",
             "NIX_REMOTE": "local",
             "NIX_CONFIG": "experimental-features = nix-command flakes\nbuild-users-group =\nsandbox = false\nsubstituters =\nflake-registry =",
             "NIX_SSL_CERT_FILE": "/etc/ssl/certs/ca-certificates.crt",
         }
+        if self.cold_root:
+            environment["PATH"] = "/bin:/usr/bin"
+            environment["CURL_CA_BUNDLE"] = environment["NIX_SSL_CERT_FILE"]
+            # NOTE: Bubblewrap owns isolation; nested Nix sandboxing needs privileges.
+            environment["NIX_CONFIG"] = (
+                "sandbox = false\nrequire-drop-supplementary-groups = false"
+            )
         for name, value in (environment | (env or {})).items():
             command.extend(["--setenv", name, value])
         result = subprocess.run(
@@ -83,7 +107,7 @@ class Sandbox:
             input=stdin,
             capture_output=True,
             text=True,
-            timeout=120,
+            timeout=timeout,
         )
         if check:
             assert result.returncode == 0, result.stdout + result.stderr
@@ -124,9 +148,16 @@ def template_lock(config, template):
     return {"version": lock["version"], "root": root, "nodes": selected}
 
 
-@pytest.fixture(scope="session", params=["flake-basic", "flake-modules"])
+@pytest.fixture(
+    scope="session",
+    params=[
+        pytest.param(name, marks=pytest.mark.xdist_group(name))
+        for name in ("flake-basic", "flake-modules")
+    ],
+)
 def prepared_sandbox(tmp_path_factory, config, request):
     sandbox = Sandbox(tmp_path_factory.mktemp(request.param), config, request.param)
+    request.addfinalizer(sandbox.make_writable)
     registration = (Path(config["closure"]) / "registration").read_text()
     sandbox.run("nix-store", "--load-db", stdin=registration)
     sandbox.run(
@@ -143,8 +174,9 @@ def prepared_sandbox(tmp_path_factory, config, request):
 
 
 @pytest.fixture
-def sandbox(tmp_path, config, prepared_sandbox):
+def sandbox(tmp_path, config, prepared_sandbox, request):
     sandbox = Sandbox(tmp_path, config, prepared_sandbox.template)
+    request.addfinalizer(sandbox.make_writable)
     subprocess.run(
         [
             "cp",
@@ -215,3 +247,9 @@ def download_probe(sandbox_project):
     )
     curl.chmod(0o755)
     return {"PATH": sandbox.guest_project + "/host-bin"}
+
+
+def pytest_addoption(parser):
+    parser.addoption(
+        "--cold-root", help="Static root filesystem for live bootstrap tests"
+    )

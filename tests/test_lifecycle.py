@@ -30,7 +30,9 @@ def test_setup_is_repeatable_and_shell_hooks_work(sandbox_project):
     ):
         assert json.loads(sandbox.run(*args).stdout) == "initial"
     result = sandbox.run("bash", "--login", "-c", "command -v task")
-    assert result.stdout.strip().startswith("/root/.local/share/sandbox/task-v")
+    assert result.stdout.strip().startswith(
+        f"{sandbox.guest_home}/.local/share/sandbox/task-v"
+    )
 
 
 @pytest.mark.parametrize("phase", ["setup", "resume"])

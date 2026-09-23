@@ -46,6 +46,13 @@
       apps.x86_64-linux.test-sandbox = {
         type = "app";
         program = "${sandboxTests.runner}/bin/test-sandbox";
+        meta.description = "Run offline template integration tests";
+      };
+      packages.x86_64-linux.test-sandbox-cold = sandboxTests.coldRunner;
+      apps.x86_64-linux.test-sandbox-cold = {
+        type = "app";
+        program = "${sandboxTests.coldRunner}/bin/test-sandbox-cold";
+        meta.description = "Test live sandbox bootstrap with an empty Nix store";
       };
 
       formatter.x86_64-linux = modules.formatter.x86_64-linux;

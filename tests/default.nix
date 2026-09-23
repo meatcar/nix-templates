@@ -8,6 +8,7 @@ let
   inherit (pkgs) lib;
   python = pkgs.python3.withPackages (ps: [
     ps.pytest
+    ps.pytest-xdist
     ps.pyyaml
   ]);
   tools = pkgs.buildEnv {
@@ -62,12 +63,32 @@ let
     ];
     text = ''
       export SANDBOX_TEST_CONFIG=${config}
-      exec python -m pytest -q -p no:cacheprovider ${./.} "$@"
+      exec python -m pytest -q -n 2 --dist loadgroup -p no:cacheprovider -m 'not cold' ${./.} "$@"
     '';
   };
+  coldRoot = pkgs.runCommand "sandbox-cold-root" { } ''
+    mkdir -p "$out"/{bin,usr,etc/ssl/certs,root,nix,tmp,proc,dev,work}
+    cp ${pkgs.pkgsStatic.busybox}/bin/busybox "$out/bin/"
+    for command in $(${pkgs.pkgsStatic.busybox}/bin/busybox --list); do
+      [ "$command" = busybox ] || ln -s busybox "$out/bin/$command"
+    done
+    cp --remove-destination -L ${pkgs.pkgsStatic.coreutils}/bin/* "$out/bin/"
+    cp ${pkgs.pkgsStatic.bash}/bin/bash "$out/bin/"
+    cp ${lib.getBin pkgs.pkgsStatic.curl}/bin/curl "$out/bin/"
+    ln -s ../bin "$out/usr/bin"
+    printf 'root:x:0:0:root:/root:/bin/bash\n' > "$out/etc/passwd"
+    printf 'root:x:0:\n' > "$out/etc/group"
+    touch "$out/etc/resolv.conf" "$out/etc/ssl/certs/ca-certificates.crt"
+  '';
 in
 {
   inherit runner;
+  coldRunner = pkgs.writeShellApplication {
+    name = "test-sandbox-cold";
+    text = ''
+      exec ${runner}/bin/test-sandbox -n 0 -m cold --cold-root=${coldRoot} "$@"
+    '';
+  };
   check = pkgs.runCommand "sandbox-integration-tests" { } ''
     ${runner}/bin/test-sandbox
     touch "$out"

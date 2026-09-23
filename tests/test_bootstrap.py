@@ -37,5 +37,5 @@ def test_setup_installs_missing_direnv_from_pinned_inputs(
     result = sandbox.run(
         "bash", "--login", "-c", "command -v direnv", env=download_probe
     )
-    assert result.stdout.strip() == "/root/.nix-profile/bin/direnv"
+    assert result.stdout.strip() == f"{sandbox.guest_home}/.nix-profile/bin/direnv"
     assert not (sandbox.home / "download-attempted").exists()
