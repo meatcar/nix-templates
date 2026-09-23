@@ -16,6 +16,7 @@ permissions:
 
 jobs:
   check:
+    # NOTE: Ubuntu 24.04 restricts unprivileged user namespaces via AppArmor.
     runs-on: ubuntu-22.04
     timeout-minutes: 15
     steps:
