@@ -22,6 +22,12 @@
       nixpkgs,
       ...
     }:
+    let
+      sandboxTests = import ./tests {
+        pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        inherit self basic modules;
+      };
+    in
     {
       checks.x86_64-linux =
         nixpkgs.lib.mapAttrs' (name: value: {
@@ -31,7 +37,16 @@
         // nixpkgs.lib.mapAttrs' (name: value: {
           name = "flake-modules-${name}";
           inherit value;
-        }) modules.checks.x86_64-linux;
+        }) modules.checks.x86_64-linux
+        // {
+          sandbox = sandboxTests.check;
+        };
+
+      packages.x86_64-linux.test-sandbox = sandboxTests.runner;
+      apps.x86_64-linux.test-sandbox = {
+        type = "app";
+        program = "${sandboxTests.runner}/bin/test-sandbox";
+      };
 
       formatter.x86_64-linux = modules.formatter.x86_64-linux;
 
