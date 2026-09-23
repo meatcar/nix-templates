@@ -1,9 +1,40 @@
 {
   description = "meatcar's nix flake templates";
 
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
+    basic = {
+      url = "path:./templates/flake-basic";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    modules = {
+      url = "path:./templates/flake-modules";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-parts.follows = "basic/flake-parts";
+    };
+  };
+
   outputs =
-    { self }:
     {
+      self,
+      basic,
+      modules,
+      nixpkgs,
+      ...
+    }:
+    {
+      checks.x86_64-linux =
+        nixpkgs.lib.mapAttrs' (name: value: {
+          name = "flake-basic-${name}";
+          inherit value;
+        }) basic.checks.x86_64-linux
+        // nixpkgs.lib.mapAttrs' (name: value: {
+          name = "flake-modules-${name}";
+          inherit value;
+        }) modules.checks.x86_64-linux;
+
+      formatter.x86_64-linux = modules.formatter.x86_64-linux;
+
       templates = {
         flake-basic = {
           path = ./templates/flake-basic;

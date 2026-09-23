@@ -13,7 +13,7 @@
       flake = { };
       systems = [ "x86_64-linux" ];
       perSystem =
-        { pkgs, ... }:
+        { pkgs, config, ... }:
         {
           legacyPackages = pkgs;
           devShells.default = pkgs.mkShell {
@@ -21,6 +21,20 @@
             name = "devshell";
             buildInputs = with pkgs; [ bun ];
           };
+          checks.devshell = config.devShells.default.overrideAttrs (old: {
+            name = "devshell-check";
+            nativeBuildInputs = old.nativeBuildInputs ++ [ pkgs.python3Packages.pytest ];
+            buildPhase = ''
+              cp -r ${./.} project
+              chmod -R u+w project
+              cd project
+              export HOME="$TMPDIR/home"
+              mkdir -p "$HOME"
+              eval "$shellHook"
+              pytest -q tests/test_devshell.py
+              touch "$out"
+            '';
+          });
         };
     };
 }
