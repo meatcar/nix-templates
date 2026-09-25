@@ -1,3 +1,8 @@
 flake.lock
 .direnv/
 .amp/portals/
+!/flake.lock
+__pycache__/
+.pytest_cache/
+/result
+/result-*

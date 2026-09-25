@@ -1,0 +1,55 @@
+version: "3"
+tasks:
+  before_nix:
+    cmds:
+      - test ! -e before_nix-fails
+      - echo before_nix >> phases
+  auth:
+    cmds:
+      - bun --eval 'if (process.env.IN_NIX_SHELL !== "impure") process.exit(71)'
+      - echo auth >> phases
+  setup_auth:
+    cmds:
+      - task: auth
+      - test "$SANDBOX_LIFECYCLE" = setup
+      - touch setup-credential
+      - test ! -e auth-fails
+      - printf 'SANDBOX_TEST_DOTENV=setup\n' > .env
+      - echo setup_auth >> phases
+  resume_auth:
+    cmds:
+      - task: auth
+      - test "$SANDBOX_LIFECYCLE" = resume
+      - test ! -e auth-fails
+      - printf 'SANDBOX_TEST_DOTENV=resume\n' > .env
+      - echo resume_auth >> phases
+  pre_deps:
+    cmds:
+      - test "$SANDBOX_TEST_DOTENV" = "$SANDBOX_LIFECYCLE"
+      - test -z "${SANDBOX_TEST_REMOVED+x}"
+      - echo pre_deps >> phases
+  deps:
+    cmds:
+      - test ! -e deps-fails
+      - echo deps >> phases
+      - export SANDBOX_TEST_EXPORT=leak
+      - test -z "${SANDBOX_TEST_EXPORT+x}"
+  post_deps:
+    cmds: [echo post_deps >> phases]
+  prep:
+    cmds: [echo prep >> phases]
+  check:
+    cmds:
+      - test ! -e check-fails
+      - echo check >> phases
+  ready:
+    cmds:
+      - echo ready >> phases
+      - touch runtime-ready
+  setup_cleanup:
+    cmds:
+      - test "$SANDBOX_TEST_DOTENV" = stale
+      - test "$SANDBOX_TEST_REMOVED" = old
+      - echo cleanup >> phases
+      - test ! -e cleanup-fails
+      - rm -f setup-credential

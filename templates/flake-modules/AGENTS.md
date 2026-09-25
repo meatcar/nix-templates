@@ -24,9 +24,16 @@ nix/flake-modules/ # flake parts: devshell.nix, treefmt.nix
 
 ## Bun / TypeScript
 
-See `./node_modules/bun-types/CLAUDE.md`.
+`bun install` / `bun test` / `bun run check`. Run inside the devshell: `treefmt` and the
+nix formatters only exist there.
 
-Code quality enforced via `bun check`, running:
+Code quality enforced via `bun run check`, running:
 
-- `bun format`: `treefmt`
-- `bun lint`: `oxlint` (type-aware; `correctness`/`suspicious`/`perf` error) + `fallow` (duplicates, code health)
+- `bun run typecheck`: `tsc --noEmit`
+- `bun run lint`: `oxlint` (type-aware; `correctness`/`suspicious`/`perf` error) + `fallow` (duplicates, code health)
+- `bun run format`: `treefmt`
+
+If you swap bun for node/npm, also swap `@tsconfig/bun` + `@types/bun` for `@types/node`
+and set `"types": ["node"]` in tsconfig. Note that `pi install git:...` runs a bare
+`npm install --omit=dev` inside a repo, so an npm project needs a committed lockfile and
+may need `.npmrc` with `legacy-peer-deps=true` to survive peer conflicts.

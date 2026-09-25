@@ -1,19 +1,8 @@
 # Bun + Nix modules
 
-After `nix flake init`, run `chmod +x .agents/setup .agents/resume` and commit
-those mode changes. Nix template export does not preserve executable bits.
+Run `nix develop` or approve `.envrc` with `direnv allow`, then `bun install`.
+Check the project with `bun test`, `bun run check`, and `nix flake check`.
+Commit `flake.lock` and `bun.lock`. This template targets x86_64 Linux.
 
-Run `.agents/setup` in a fresh Amp orb. It installs Nix and direnv, loads
-`.envrc`, installs Bun dependencies, and persists the complete environment for
-new login shells in this checkout. Run it again after changing `.envrc`.
-`.agents/resume` checks Nix without installing anything.
-
-Use `direnv exec . <command>` locally or `nix develop --command <command>` in CI.
-Run `bun test`, `bun check`, and `nix flake check` to validate the project.
-Commit the generated `flake.lock` and `bun.lock`. Setup uses a frozen Bun
-lockfile when available. Keep `.agents/setup` and `.agents/resume` executable.
-
-This template targets non-root x86_64 Linux orbs. Initial setup needs network
-access. No secrets, project pre-setup script, or web services are required.
-If you add a server, declare it in `.amp/services.yaml` and run
-`amp orb services ensure`. Authenticate users in resume, not snapshot setup.
+For disposable environments, add `github:meatcar/nix-templates#sandbox` with
+`nix flake init -t`, then follow `.agents/README.md`.

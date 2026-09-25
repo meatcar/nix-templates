@@ -5,9 +5,10 @@
   "module": "index.ts",
   "scripts": {
     "test": "bun test",
+    "typecheck": "tsc --noEmit",
     "lint": "oxlint && fallow",
     "format": "treefmt -q",
-    "check": "bun run lint && bun run format --ci"
+    "check": "bun run typecheck && bun run lint && treefmt --ci"
   },
   "devDependencies": {
     "@tsconfig/bun": "^1.0.10",
