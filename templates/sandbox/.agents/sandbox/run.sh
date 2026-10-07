@@ -64,7 +64,8 @@ fi
 
 "${task[@]}" before_nix
 if [ "$SANDBOX_LIFECYCLE" = setup ]; then
-  bash .agents/sandbox/nix.sh "$task_dir/task"
+  bash .agents/sandbox/provision-nix.sh
+  bash .agents/sandbox/provision-shell.sh "$task_dir/task"
 fi
 
 direnv exec . "${task[@]}" "${SANDBOX_LIFECYCLE}_auth"

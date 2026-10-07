@@ -29,7 +29,14 @@ def test_sandbox_layers_without_replacing_project_files(sandbox):
         assert (sandbox.project / path).read_bytes() == content
     assert (sandbox.project / "Taskfile.yml").read_text() == "project taskfile\n"
     assert not (sandbox.project / ".amp").exists()
-    for path in ("setup", "resume", "Taskfile.yml", "sandbox/run.sh", "sandbox/nix.sh"):
+    for path in (
+        "setup",
+        "resume",
+        "Taskfile.yml",
+        "sandbox/run.sh",
+        "sandbox/provision-nix.sh",
+        "sandbox/provision-shell.sh",
+    ):
         assert (sandbox.project / ".agents" / path).is_file()
     tracked = sandbox.run(
         "git", "ls-files", "--cached", "--others", "--exclude-standard"

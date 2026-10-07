@@ -1,26 +1,7 @@
 #!/usr/bin/env bash
-# Provision Nix, direnv, and future shell integration for a disposable sandbox.
+# Install shell hooks that load the devshell in future shells.
 # Takes the Task executable path as its first argument.
 set -euo pipefail
-
-if [ ! -x "$HOME/.nix-profile/bin/nix" ]; then
-  installer="$(mktemp)"
-  curl -fsSL https://nixos.org/nix/install -o "$installer"
-  sh "$installer" --no-daemon --yes --no-channel-add
-  rm -f "$installer"
-  # shellcheck source=/dev/null
-  . "$HOME/.nix-profile/etc/profile.d/nix.sh"
-fi
-
-mkdir -p "$HOME/.config/nix"
-touch "$HOME/.config/nix/nix.conf"
-grep -Fqx 'sandbox = false' "$HOME/.config/nix/nix.conf" ||
-  printf '%s\n' 'sandbox = false' >> "$HOME/.config/nix/nix.conf"
-grep -Eq '^experimental-features = .*nix-command.*flakes' "$HOME/.config/nix/nix.conf" ||
-  printf '%s\n' 'experimental-features = nix-command flakes' >> "$HOME/.config/nix/nix.conf"
-
-command -v direnv > /dev/null 2>&1 || nix profile install --inputs-from . nixpkgs#direnv
-direnv allow .
 
 agent_env="$HOME/.sandbox-env.sh"
 printf "export PATH=%q:\$PATH\n" "$(dirname "$1"):$HOME/.nix-profile/bin" > "$agent_env"
