@@ -2,30 +2,26 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:best-practices"],
   "vulnerabilityAlerts": {
-    "enabled": true
+    "enabled": true,
   },
   "osvVulnerabilityAlerts": true,
   "nix": {
-    "enabled": true
+    "enabled": true,
   },
   "lockFileMaintenance": {
-    "enabled": true
+    "enabled": true,
   },
   "packageRules": [
     {
       "matchUpdateTypes": ["minor", "patch"],
       "matchCurrentVersion": "!/^0/",
-      "automerge": true
+      "automerge": true,
     },
     {
+      // NOTE: versions must match nixpkgs.
       "matchDatasources": ["npm"],
-      "matchPackageNames": [
-        // needs to match nixpkgs
-        "@playwright/**",
-        "bun",
-        "@types/bun"
-      ],
-      "enabled": false
-    }
-  ]
+      "matchPackageNames": ["@playwright/**", "bun", "@types/bun"],
+      "enabled": false,
+    },
+  ],
 }
