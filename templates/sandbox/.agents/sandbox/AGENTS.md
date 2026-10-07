@@ -32,6 +32,9 @@ gzip, coreutils, and permission to create `/nix`.
    executable bits.
 2. Remove any `.agents/` VCS ignore rule.
 3. Fill in the TODO tasks in `.agents/Taskfile.yml`.
-4. Configure the provider to run `.agents/setup` during provisioning and
+4. Add `local>OWNER/REPO//.agents/sandbox/renovate.jsonc` to `extends` in the
+   project's Renovate config, with this repository's path, so Renovate updates
+   `task.sha256`.
+5. Configure the provider to run `.agents/setup` during provisioning and
    `.agents/resume` on wake.
-5. Delete this Install section, then commit `.agents/`.
+6. Delete this Install section, then commit `.agents/`.
