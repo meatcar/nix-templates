@@ -46,8 +46,11 @@ Update shared behavior by replacing [sandbox/](sandbox/), leaving the project
 Taskfile and its includes untouched. [run.sh](sandbox/run.sh) owns phase ordering,
 environment entry, and setup cleanup. It bootstraps a pinned, checksum-verified
 Task release before evaluating the project flake.
-[provision-nix.sh](sandbox/provision-nix.sh) provisions Nix/direnv and
-[provision-shell.sh](sandbox/provision-shell.sh) installs shell hooks.
+[provision-nix.sh](sandbox/provision-nix.sh) installs Nix/direnv during setup.
+[provision-shell.sh](sandbox/provision-shell.sh) installs shell hooks during both
+lifecycles. It moves the login block to the end of `~/.bash_profile`, after
+environment loaders that providers append, and reloads the devshell in nested
+login shells.
 
 ## Credentials and snapshots
 

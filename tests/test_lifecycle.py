@@ -7,12 +7,15 @@ import yaml
 def test_setup_is_repeatable_and_shell_hooks_work(sandbox_project):
     sandbox = sandbox_project
     (sandbox.project / ".env").write_text("SANDBOX_TEST_DOTENV=initial\n")
+    (sandbox.home / ".bash_profile").write_text("export BEFORE=1\n")
     for phase in ("setup", "setup", "resume"):
         sandbox.run(f".agents/{phase}")
     settings = (sandbox.home / ".config/nix/nix.conf").read_text().splitlines()
     assert settings.count("sandbox = false") == 1
     assert settings.count("experimental-features = nix-command flakes") == 1
     profile = (sandbox.home / ".bash_profile").read_text().splitlines()
+    assert profile[0] == "export BEFORE=1"
+    assert profile[-1] == "fi"
     assert profile.count(f"# sandbox environment: {sandbox.guest_project}") == 1
     assert (sandbox.home / ".bashrc").read_text().count(".sandbox-env.sh") == 2
     command = (
@@ -39,7 +42,7 @@ def test_setup_is_repeatable_and_shell_hooks_work(sandbox_project):
     ("directory", "active"),
     [(".", True), ("nested", True), ("../project with spaces-other", False)],
 )
-def test_login_environment_is_scoped_and_activates_once(
+def test_login_environment_is_scoped_and_activates_once_after_env_loader(
     sandbox_project, directory, active
 ):
     sandbox = sandbox_project
@@ -49,13 +52,16 @@ def test_login_environment_is_scoped_and_activates_once(
             'export NODE_PATH="$PWD/node_modules"\n'
         )
     sandbox.run(".agents/setup")
+    with (sandbox.home / ".bash_profile").open("a") as profile:
+        profile.write("export PATH=/bin\n")
+    sandbox.run(".agents/resume")
     if active:
         probe = r"""
             test "$IN_NIX_SHELL" = impure
             test "$NODE_PATH" = "$2/node_modules"
             test "$SANDBOX_TEST_ACTIVATIONS" = 1
             test "$(bun --eval 'console.log(6 * 7)')" = 42
-            bash --login -ec 'test "$SANDBOX_TEST_ACTIVATIONS" = 1'
+            bash --login -ec 'test "$SANDBOX_TEST_ACTIVATIONS" = 1; command -v bun'
         """
     else:
         probe = r"""
