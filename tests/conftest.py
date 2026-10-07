@@ -190,16 +190,21 @@ def sandbox(tmp_path, config, prepared_sandbox, request):
     return sandbox
 
 
+@pytest.fixture(scope="session")
+def task_version(config):
+    sums = Path(config["source"]) / "templates/sandbox/.agents/sandbox/task.sha256"
+    versions = {line.split()[1].split("/")[0] for line in sums.read_text().splitlines()}
+    assert len(versions) == 1, f"Task pins disagree: {versions}"
+    return versions.pop()
+
+
 @pytest.fixture
-def sandbox_project(sandbox):
+def sandbox_project(sandbox, task_version):
     sandbox.run(
         "nix", "flake", "init", "-t", f"path:{sandbox.config['source']}#sandbox"
     )
     sandbox.run("nix", "profile", "install", "--offline", sandbox.config["nix"])
-    sandbox.task = (
-        sandbox.home
-        / f".local/share/sandbox/task-v{sandbox.config['taskVersion']}/task"
-    )
+    sandbox.task = sandbox.home / f".local/share/sandbox/task-{task_version}/task"
     sandbox.task.parent.mkdir(parents=True)
     sandbox.task.symlink_to(sandbox.config["task"])
     for name in ("setup", "resume"):

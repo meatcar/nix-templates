@@ -3,8 +3,27 @@
 set -euo pipefail
 
 export SANDBOX_LIFECYCLE="$1"
-version=3.48.0
-task_dir="$HOME/.local/share/sandbox/task-v$version"
+case "$(uname -sm)" in
+'Linux x86_64') arch=amd64 ;;
+'Linux aarch64') arch=arm64 ;;
+*)
+  echo 'Sandbox requires x86_64 or aarch64 Linux' >&2
+  exit 1
+  ;;
+esac
+asset="task_linux_$arch.tar.gz"
+release=
+while read -r sum path; do
+  if [ "${path#*/}" = "$asset" ]; then
+    sha256="$sum" release="$path"
+  fi
+done < .agents/sandbox/task.sha256
+if [ -z "$release" ]; then
+  echo "No Task checksum for $asset in .agents/sandbox/task.sha256" >&2
+  exit 1
+fi
+version="${release%/*}"
+task_dir="$HOME/.local/share/sandbox/task-$version"
 
 http_proxy_value="${HTTP_PROXY:-${http_proxy:-${npm_config_http_proxy:-}}}"
 https_proxy_value="${HTTPS_PROXY:-${https_proxy:-${npm_config_https_proxy:-}}}"
@@ -20,24 +39,10 @@ if [ ! -x "$task_dir/task" ]; then
     echo 'Task unavailable; run .agents/setup' >&2
     exit 1
   fi
-  case "$(uname -sm)" in
-  'Linux x86_64')
-    arch=amd64
-    checksum=f4bfc4eef1b2557b262f3cc0a79976a421885cb7b9e71cfe75568a2ebe4d7ae5
-    ;;
-  'Linux aarch64')
-    arch=arm64
-    checksum=15a54fd45f706ce0f4c679c93cf04e02d72ca7223f157209201a1576008056d6
-    ;;
-  *)
-    echo 'Task bootstrap requires x86_64 or aarch64 Linux' >&2
-    exit 1
-    ;;
-  esac
   tmp="$(mktemp -d)"
   trap 'rm -rf "$tmp"' EXIT
-  curl -fsSL "https://github.com/go-task/task/releases/download/v$version/task_linux_$arch.tar.gz" -o "$tmp/task.tar.gz"
-  printf '%s  %s\n' "$checksum" "$tmp/task.tar.gz" | sha256sum --check
+  curl -fsSL "https://github.com/go-task/task/releases/download/$release" -o "$tmp/task.tar.gz"
+  printf '%s  %s\n' "$sha256" "$tmp/task.tar.gz" | sha256sum --check
   tar -xzf "$tmp/task.tar.gz" -C "$tmp" task
   mkdir -p "$task_dir"
   install -m 755 "$tmp/task" "$task_dir/task.tmp"

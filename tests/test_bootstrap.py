@@ -17,6 +17,18 @@ def test_resume_never_installs_missing_tools(sandbox_project, download_probe, mi
     assert not (sandbox.home / "download-attempted").exists()
 
 
+def test_missing_task_pin_fails_before_download(sandbox_project, download_probe):
+    sandbox = sandbox_project
+    sandbox.task.unlink()
+    sums = sandbox.project / ".agents/sandbox/task.sha256"
+    lines = sums.read_text().splitlines(keepends=True)
+    sums.write_text("".join(line for line in lines if "_amd64." not in line))
+    result = sandbox.run(".agents/setup", env=download_probe, check=False)
+    assert result.returncode != 0
+    assert "No Task checksum for task_linux_amd64.tar.gz" in result.stderr
+    assert not (sandbox.home / "download-attempted").exists()
+
+
 def test_task_download_requires_valid_checksum(sandbox_project, download_probe):
     sandbox = sandbox_project
     sandbox.task.unlink()

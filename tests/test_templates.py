@@ -36,6 +36,7 @@ def test_sandbox_layers_without_replacing_project_files(sandbox):
         "sandbox/run.sh",
         "sandbox/provision-nix.sh",
         "sandbox/provision-shell.sh",
+        "sandbox/task.sha256",
     ):
         assert (sandbox.project / ".agents" / path).is_file()
     tracked = sandbox.run(
