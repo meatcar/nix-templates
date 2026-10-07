@@ -15,11 +15,12 @@ permissions:
 
 jobs:
   check:
-    # NOTE: Ubuntu 24.04 restricts unprivileged user namespaces via AppArmor.
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
+      # NOTE: AppArmor blocks unprivileged user namespaces.
+      - run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
       - uses: DeterminateSystems/nix-installer-action@v20
       - uses: DeterminateSystems/magic-nix-cache-action@v13
       - run: nix flake check --print-build-logs
