@@ -77,8 +77,7 @@
           path = ./templates/sandbox;
           description = "Task-based sandbox setup layered onto a Nix and direnv project";
           welcomeText = ''
-            Run `chmod +x .agents/setup .agents/resume`, then customize `.agents/Taskfile.yml`.
-            See `.agents/README.md` for requirements and lifecycle behavior.
+            Follow the Install section of `.agents/sandbox/AGENTS.md`.
           '';
         };
       };

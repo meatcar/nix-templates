@@ -11,7 +11,7 @@ nix flake init --template github:meatcar/nix-templates#flake-modules
 nix develop
 ```
 
-For disposable environments, add the optional [sandbox overlay](templates/sandbox/.agents/README.md):
+For disposable environments, add the optional [sandbox overlay](templates/sandbox/.agents/sandbox/AGENTS.md):
 
 ```sh
 nix flake init --template github:meatcar/nix-templates#sandbox
