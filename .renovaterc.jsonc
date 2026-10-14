@@ -4,4 +4,5 @@
     "github>meatcar/nix-templates//templates/flake-modules/.renovaterc.jsonc",
     "github>meatcar/nix-templates//templates/sandbox/.agents/sandbox/renovate.jsonc",
   ],
+  "labels": ["renovate"],
 }
