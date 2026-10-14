@@ -35,14 +35,20 @@ fi
 [[ -z $kept || $kept == *$'\n\n' ]] || kept+=$'\n'
 
 # NOTE: Unset DIRENV_FILE to force a reload. Keep DIRENV_DIFF so direnv reverts an inherited activation.
+# Amp's headless service runs `bash -lc` from / before entering AMP_WORKING_DIRECTORY, so match that
+# too, and run direnv from the project directory rather than $PWD.
+# The block must end at its only unindented `fi`; the parser above strips it by that line.
 {
-  printf "%s%s\nif [[ \$PWD == %q || \$PWD == %q/* ]]; then\n" "$kept" "$marker" "$PWD" "$PWD"
+  printf "%s%s\n" "$kept" "$marker"
+  printf "if [[ \$PWD == %q || \$PWD == %q/* ||\n" "$PWD" "$PWD"
+  printf "  \${AMP_WORKING_DIRECTORY:-} == %q || \${AMP_WORKING_DIRECTORY:-} == %q/* ]]; then\n" "$PWD" "$PWD"
   cat << 'EOF'
   [ -f "$HOME/.sandbox-env.sh" ] && . "$HOME/.sandbox-env.sh"
   if command -v direnv >/dev/null 2>&1; then
     unset DIRENV_FILE
-    direnv allow . >/dev/null 2>&1
-    eval "$(direnv export bash 2>/dev/null)"
+EOF
+  printf "    eval \"\$(cd %q && { direnv allow . >/dev/null 2>&1; direnv export bash 2>/dev/null; })\"\n" "$PWD"
+  cat << 'EOF'
   fi
 fi
 EOF
