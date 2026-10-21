@@ -1,4 +1,5 @@
 import json
+import posixpath
 
 import pytest
 import yaml
@@ -39,11 +40,18 @@ def test_setup_is_repeatable_and_shell_hooks_work(sandbox_project):
 
 
 @pytest.mark.parametrize(
-    ("directory", "active"),
-    [(".", True), ("nested", True), ("../project with spaces-other", False)],
+    ("directory", "working_directory", "active"),
+    [
+        (".", None, True),
+        ("nested", None, True),
+        ("../project with spaces-other", None, False),
+        # Amp's headless service logs in from / before entering AMP_WORKING_DIRECTORY.
+        ("/", ".", True),
+        ("/", "../project with spaces-other", False),
+    ],
 )
 def test_login_environment_is_scoped_and_activates_once_after_env_loader(
-    sandbox_project, directory, active
+    sandbox_project, directory, working_directory, active
 ):
     sandbox = sandbox_project
     with (sandbox.project / ".envrc").open("a") as envrc:
@@ -77,12 +85,15 @@ def test_login_environment_is_scoped_and_activates_once_after_env_loader(
             mkdir -p -- "$1"
             cd -- "$1"
             exec env -i HOME="$HOME" PATH=/bin NIX_REMOTE=local NIX_CONFIG="$NIX_CONFIG" \
-                bash --login -ec "$2" bash "$1" "$3"
+                ${4:+AMP_WORKING_DIRECTORY="$4"} bash --login -ec "$2" bash "$1" "$3"
         """,
         "bash",
         directory,
         probe,
         sandbox.guest_project,
+        posixpath.normpath(posixpath.join(sandbox.guest_project, working_directory))
+        if working_directory
+        else "",
     )
 
 
