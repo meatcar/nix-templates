@@ -1,5 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  // NOTE: after bootstrap-automerge.sh, opt in to github>meatcar/renovate-config:automerge
+  // when that preset is published. See README.md; it is not required yet.
   "extends": ["github>meatcar/renovate-config"],
   "packageRules": [
     {
@@ -10,7 +12,7 @@
     {
       // NOTE: versions must match nixpkgs.
       "matchDatasources": ["npm"],
-      "matchPackageNames": ["@playwright/**", "bun", "@types/bun"],
+      "matchPackageNames": ["@playwright/**", "playwright", "playwright-core", "bun", "@types/bun"],
       "enabled": false,
     },
   ],

@@ -5,12 +5,14 @@
   "module": "index.ts",
   "scripts": {
     "test": "bun test",
+    "test:e2e": "bunx --bun playwright test",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint && fallow",
     "format": "treefmt -q",
     "check": "bun run typecheck && bun run lint && treefmt --ci"
   },
   "devDependencies": {
+    "@playwright/test": "1.59.1",
     "@tsconfig/bun": "^1.0.10",
     "@types/bun": "latest",
     "fallow": "^2.66.2",

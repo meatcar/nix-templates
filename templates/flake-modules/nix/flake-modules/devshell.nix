@@ -24,6 +24,9 @@
             nil # nix lsp
           ]
           ++ [ bun ];
+        # NOTE: @playwright/test must match pkgs.playwright-driver.version.
+        PLAYWRIGHT_BROWSERS_PATH = pkgs.playwright-driver.browsers;
+        PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS = "true";
       };
       checks.devshell = config.devShells.default.overrideAttrs (old: {
         name = "devshell-check";
