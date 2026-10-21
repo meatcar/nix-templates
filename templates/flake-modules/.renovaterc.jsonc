@@ -3,6 +3,8 @@
   // NOTE: after bootstrap-automerge.sh, opt in to github>meatcar/renovate-config:automerge
   // when that preset is published. See README.md; it is not required yet.
   "extends": ["github>meatcar/renovate-config"],
+  // NOTE: bun2nix uses bun.lock integrity hashes; no extra cache hash to update.
+  "nix": { "enabled": true },
   "packageRules": [
     {
       "matchUpdateTypes": ["minor", "patch"],

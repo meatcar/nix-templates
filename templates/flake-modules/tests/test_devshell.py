@@ -88,7 +88,7 @@ def test_automerge_bootstrap_is_idempotent(github_api):
         ],
         "rules": [{"type": "required_status_checks", "parameters": {
             "strict_required_status_checks_policy": True,
-            "required_status_checks": [{"context": "check / check", "integration_id": 15368}],
+            "required_status_checks": [{"context": "check", "integration_id": 15368}],
         }}],
     }
     assert state["calls"][4]["body"] == create["body"]

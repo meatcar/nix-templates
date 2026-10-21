@@ -35,7 +35,7 @@ gh api "$endpoint" --method "$method" --input - > /dev/null <<'JSON'
   ],
   "rules": [{"type": "required_status_checks", "parameters": {
     "strict_required_status_checks_policy": true,
-    "required_status_checks": [{"context": "check / check", "integration_id": 15368}]
+    "required_status_checks": [{"context": "check", "integration_id": 15368}]
   }}]
 }
 JSON
@@ -44,4 +44,4 @@ gh api "repos/$repo" --method PATCH --input - > /dev/null <<'JSON'
 {"allow_auto_merge": true}
 JSON
 
-echo "Required check 'check / check' configured; auto-merge enabled for $repo."
+echo "Required check 'check' configured; auto-merge enabled for $repo."
