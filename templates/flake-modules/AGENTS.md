@@ -3,7 +3,7 @@
 ```
 flake.nix          # inputs only
 .envrc             # env init
-nix/flake-modules/ # flake parts: devshell.nix, treefmt.nix
+nix/flake-modules/ # flake parts: pkgs.nix, devshell.nix, treefmt.nix
 ```
 
 ## Principles

@@ -16,6 +16,17 @@ def test_generated_devshell(sandbox):
     assert json.loads(result.stdout) == [2, 5, 7]
 
 
+def test_generated_devshell_bun_rejects_brotli_block_switch_fixture(sandbox):
+    sandbox.run(
+        "nix",
+        "develop",
+        "--offline",
+        "--command",
+        "bun",
+        f"{sandbox.config['source']}/tests/fixtures/brotli-cve-2026-111497.js",
+    )
+
+
 def test_sandbox_layers_without_replacing_project_files(sandbox):
     originals = {
         path: (sandbox.project / path).read_bytes()

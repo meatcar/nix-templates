@@ -2,11 +2,10 @@
   perSystem =
     {
       pkgs,
-      inputs',
       ...
     }:
     let
-      bun2nix = inputs'.bun2nix.packages.default;
+      inherit (pkgs) bun2nix;
       bunNix = pkgs.runCommand "bun-dependencies.nix" { nativeBuildInputs = [ bun2nix ]; } ''
         bun2nix --lock-file ${../../bun.lock} --output-file "$out"
       '';

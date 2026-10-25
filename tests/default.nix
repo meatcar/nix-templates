@@ -37,7 +37,11 @@ let
       basic.devShells.${pkgs.stdenv.hostPlatform.system}.default
       modules.devShells.${pkgs.stdenv.hostPlatform.system}.default
     ]
-    ++ map (input: input.outPath) (lib.attrValues basic.inputs ++ lib.attrValues modules.inputs);
+    ++ map (input: input.outPath) (
+      lib.attrValues basic.inputs
+      ++ lib.attrValues modules.inputs
+      ++ lib.attrValues modules.inputs.bun2nix.inputs
+    );
   };
   config = pkgs.writeText "sandbox-test-config.json" (
     builtins.toJSON {

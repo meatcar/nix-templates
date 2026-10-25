@@ -31,7 +31,7 @@
     {
       devShells.x86_64-linux.default = nixpkgs.legacyPackages.x86_64-linux.mkShell {
         packages = with nixpkgs.legacyPackages.x86_64-linux; [
-          bun
+          modules.legacyPackages.x86_64-linux.bun
           shellcheck
         ];
       };
@@ -47,6 +47,13 @@
         }) modules.checks.x86_64-linux
         // {
           sandbox = sandboxTests.check;
+          devshell = self.devShells.x86_64-linux.default.overrideAttrs {
+            name = "root-devshell-check";
+            buildPhase = ''
+              bun ${./tests/fixtures/brotli-cve-2026-111497.js}
+              touch "$out"
+            '';
+          };
         };
 
       packages.x86_64-linux.test-sandbox = sandboxTests.runner;

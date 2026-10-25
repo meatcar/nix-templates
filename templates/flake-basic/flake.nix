@@ -13,8 +13,17 @@
       flake = { };
       systems = [ "x86_64-linux" ];
       perSystem =
-        { pkgs, config, ... }:
         {
+          pkgs,
+          config,
+          system,
+          ...
+        }:
+        {
+          _module.args.pkgs = import inputs.nixpkgs {
+            inherit system;
+            overlays = [ (import ./nix/overlays/bun-cve-2026-111497.nix) ];
+          };
           legacyPackages = pkgs;
           devShells.default = pkgs.mkShell {
             # TODO: change to project name
