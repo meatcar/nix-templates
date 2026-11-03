@@ -18,5 +18,9 @@ grep -Fqx 'sandbox = false' "$HOME/.config/nix/nix.conf" ||
 grep -Eq '^experimental-features = .*nix-command.*flakes' "$HOME/.config/nix/nix.conf" ||
   printf '%s\n' 'experimental-features = nix-command flakes' >> "$HOME/.config/nix/nix.conf"
 
-command -v direnv > /dev/null 2>&1 || nix profile install --inputs-from . nixpkgs#direnv
+if ! command -v direnv > /dev/null 2>&1; then
+  # `install` is a deprecated alias of `add`; older Nix only has `install`.
+  if nix profile add --help > /dev/null 2>&1; then verb=add; else verb=install; fi
+  nix profile "$verb" --inputs-from . nixpkgs#direnv
+fi
 direnv allow .
