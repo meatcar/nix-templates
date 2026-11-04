@@ -1,4 +1,5 @@
 import json
+import re
 
 import pytest
 import yaml
@@ -9,7 +10,10 @@ def test_setup_is_repeatable_and_shell_hooks_work(sandbox_project):
     (sandbox.project / ".env").write_text("SANDBOX_TEST_DOTENV=initial\n")
     (sandbox.home / ".bash_profile").write_text("export BEFORE=1\n")
     for phase in ("setup", "setup", "resume"):
-        sandbox.run(f".agents/{phase}")
+        result = sandbox.run(f".agents/{phase}")
+        if phase == "setup":
+            assert result.stdout
+            assert all(re.match(r"\[ *\d+s\] ", line) for line in result.stdout.splitlines())
     settings = (sandbox.home / ".config/nix/nix.conf").read_text().splitlines()
     assert settings.count("sandbox = false") == 1
     assert settings.count("experimental-features = nix-command flakes") == 1

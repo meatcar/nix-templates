@@ -25,7 +25,7 @@ def test_missing_task_pin_fails_before_download(sandbox_project, download_probe)
     sums.write_text("".join(line for line in lines if "_amd64." not in line))
     result = sandbox.run(".agents/setup", env=download_probe, check=False)
     assert result.returncode != 0
-    assert "No Task checksum for task_linux_amd64.tar.gz" in result.stderr
+    assert "No Task checksum for task_linux_amd64.tar.gz" in result.stdout
     assert not (sandbox.home / "download-attempted").exists()
 
 
