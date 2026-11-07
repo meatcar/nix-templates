@@ -10,10 +10,21 @@ import yaml
     [
         ("/bin:/usr/bin", "{task}:{nix}:/bin:/usr/bin"),
         ("{nix}:/bin", "{task}:{nix}:/bin"),
-        ("{task}:/bin", "{nix}:{task}:/bin"),
+        ("{task}:/bin", "{task}:{nix}:/bin"),
         (
             "{nix}:{nix}:{task}:{task}:/bin:/bin",
-            "{nix}:{nix}:{task}:{task}:/bin:/bin",
+            "{task}:{nix}:/bin:/bin",
+        ),
+        (
+            "/bin:{nix}:/usr/bin:{task}:/bin",
+            "{task}:{nix}:/bin:/usr/bin:/bin",
+        ),
+        ("{nix}:{task}:{nix}", "{task}:{nix}"),
+        (":{task}::/bin:{nix}:", "{task}:{nix}:::/bin:"),
+        ("", "{task}:{nix}:"),
+        (
+            "{task}-other:/bin:{nix}/tools:{task}:{nix}",
+            "{task}:{nix}:{task}-other:/bin:{nix}/tools",
         ),
     ],
 )
@@ -35,7 +46,7 @@ def test_shell_environment_preserves_path_across_sourcing_and_boots(
             "-i",
             f"HOME={sandbox.guest_home}",
             f"PATH={path}",
-            "bash",
+            "/bin/bash",
             "--noprofile",
             "--norc",
             "-c",
