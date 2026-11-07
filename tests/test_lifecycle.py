@@ -5,6 +5,46 @@ import pytest
 import yaml
 
 
+@pytest.mark.parametrize(
+    ("initial", "expected"),
+    [
+        ("/bin:/usr/bin", "{task}:{nix}:/bin:/usr/bin"),
+        ("{nix}:/bin", "{task}:{nix}:/bin"),
+        ("{task}:/bin", "{nix}:{task}:/bin"),
+        (
+            "{nix}:{nix}:{task}:{task}:/bin:/bin",
+            "{nix}:{nix}:{task}:{task}:/bin:/bin",
+        ),
+    ],
+)
+def test_shell_environment_preserves_path_across_sourcing_and_boots(
+    sandbox_project, initial, expected
+):
+    sandbox = sandbox_project
+    paths = {
+        "task": f"{sandbox.guest_home}/{sandbox.task.parent.relative_to(sandbox.home)}",
+        "nix": f"{sandbox.guest_home}/.nix-profile/bin",
+    }
+    sandbox.run(
+        "bash", ".agents/sandbox/provision-shell.sh", f"{paths['task']}/task"
+    )
+    path = initial.format(**paths)
+    for _ in range(3):
+        result = sandbox.run(
+            "env",
+            "-i",
+            f"HOME={sandbox.guest_home}",
+            f"PATH={path}",
+            "bash",
+            "--noprofile",
+            "--norc",
+            "-c",
+            'for _ in 1 2 3; do . "$HOME/.sandbox-env.sh"; done; printf "%s" "$PATH"',
+        )
+        path = result.stdout
+        assert path == expected.format(**paths)
+
+
 def test_setup_is_repeatable_and_shell_hooks_work(sandbox_project):
     sandbox = sandbox_project
     (sandbox.project / ".env").write_text("SANDBOX_TEST_DOTENV=initial\n")
