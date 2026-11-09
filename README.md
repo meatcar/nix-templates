@@ -22,6 +22,16 @@ Customize `.agents/Taskfile.yml` before running setup. The overlay replaces the
 older embedded Amp scripts; existing projects must remove their old
 `.agents/setup` and `.agents/resume` before applying it.
 
+Nix uses its Linux sandbox default. Setup removes the exact `sandbox = false`
+line written by older overlays from `~/.config/nix/nix.conf`; resume does not
+perform this migration. Existing orbs can remove that line directly without
+rerunning project setup. Providers that require unsandboxed builds can set
+`sandbox = false` through `NIX_CONFIG`.
+
+The `flake-modules` formatting and project checks ignore system Git configuration
+so host commit-signing rules do not affect temporary test repositories, even in
+unsandboxed builds. Signing in the working checkout is unchanged.
+
 Commit generated lockfiles and lifecycle scripts. Run `nix flake check -L` to
 validate this repository; see [tests/README.md](tests/README.md) for targeted and
 cold-bootstrap checks.

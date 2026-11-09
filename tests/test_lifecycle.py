@@ -56,8 +56,12 @@ def test_shell_environment_preserves_path_across_sourcing_and_boots(
         assert path == expected.format(**paths)
 
 
-def test_setup_is_repeatable_and_shell_hooks_work(sandbox_project):
+@pytest.mark.parametrize("previous_config", ["", "sandbox = false\nsandbox = false\n"])
+def test_setup_is_repeatable_and_shell_hooks_work(sandbox_project, previous_config):
     sandbox = sandbox_project
+    config_directory = sandbox.home / ".config/nix"
+    config_directory.mkdir(parents=True, exist_ok=True)
+    (config_directory / "nix.conf").write_text(previous_config)
     (sandbox.project / ".env").write_text("SANDBOX_TEST_DOTENV=initial\n")
     (sandbox.home / ".bash_profile").write_text("export BEFORE=1\n")
     for phase in ("setup", "setup", "resume"):
@@ -66,7 +70,7 @@ def test_setup_is_repeatable_and_shell_hooks_work(sandbox_project):
             assert result.stdout
             assert all(re.match(r"\[ *\d+s\] ", line) for line in result.stdout.splitlines())
     settings = (sandbox.home / ".config/nix/nix.conf").read_text().splitlines()
-    assert settings.count("sandbox = false") == 1
+    assert "sandbox = false" not in settings
     assert settings.count("experimental-features = nix-command flakes") == 1
     profile = (sandbox.home / ".bash_profile").read_text().splitlines()
     assert profile[0] == "export BEFORE=1"

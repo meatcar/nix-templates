@@ -13,8 +13,7 @@ fi
 
 mkdir -p "$HOME/.config/nix"
 touch "$HOME/.config/nix/nix.conf"
-grep -Fqx 'sandbox = false' "$HOME/.config/nix/nix.conf" ||
-  printf '%s\n' 'sandbox = false' >> "$HOME/.config/nix/nix.conf"
+sed -i '/^sandbox = false$/d' "$HOME/.config/nix/nix.conf"
 grep -Eq '^experimental-features = .*nix-command.*flakes' "$HOME/.config/nix/nix.conf" ||
   printf '%s\n' 'experimental-features = nix-command flakes' >> "$HOME/.config/nix/nix.conf"
 

@@ -33,6 +33,7 @@
           FONTCONFIG_FILE = pkgs.makeFontsConf { fontDirectories = [ pkgs.dejavu_fonts ]; };
           # NOTE: Nix verifies tarball hashes before ELF patching invalidates Fallow signatures.
           FALLOW_SKIP_BINARY_VERIFY = "1";
+          GIT_CONFIG_NOSYSTEM = "1";
           CI = "true";
           buildPhase = ''
             export HOME="$TMPDIR/home"

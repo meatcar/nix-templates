@@ -8,6 +8,7 @@
     {
       config,
       pkgs,
+      lib,
       ...
     }:
     {
@@ -31,6 +32,13 @@
         ];
       };
       formatter = config.treefmt.build.wrapper;
+      checks = lib.mkIf config.treefmt.flakeCheck {
+        treefmt = lib.mkForce (
+          (config.treefmt.build.check config.treefmt.projectRoot).overrideAttrs {
+            GIT_CONFIG_NOSYSTEM = "1";
+          }
+        );
+      };
       treefmt.config.programs = {
         ## Nix
         # format nix files
