@@ -99,7 +99,13 @@ def test_setup_is_repeatable_and_shell_hooks_work(sandbox_project, previous_conf
 
 @pytest.mark.parametrize(
     ("directory", "active"),
-    [(".", True), ("nested", True), ("../project with spaces-other", False)],
+    [
+        (".", True),
+        ("nested", True),
+        ("/", True),
+        ("..", False),
+        ("../project with spaces-other", False),
+    ],
 )
 def test_login_environment_is_scoped_and_activates_once_after_env_loader(
     sandbox_project, directory, active
@@ -129,6 +135,7 @@ def test_login_environment_is_scoped_and_activates_once_after_env_loader(
             test -z "${NODE_PATH:-}"
             ! command -v bun
         """
+    probe = 'test "$PWD" = "$1"; ' + probe
     sandbox.run(
         "bash",
         "-ec",
@@ -136,7 +143,7 @@ def test_login_environment_is_scoped_and_activates_once_after_env_loader(
             mkdir -p -- "$1"
             cd -- "$1"
             exec env -i HOME="$HOME" PATH=/bin NIX_REMOTE=local NIX_CONFIG="$NIX_CONFIG" \
-                bash --login -ec "$2" bash "$1" "$3"
+                bash --login -ec "$2" bash "$PWD" "$3"
         """,
         "bash",
         directory,

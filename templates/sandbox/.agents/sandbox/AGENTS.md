@@ -9,8 +9,7 @@ runs `.agents/setup` once while provisioning and `.agents/resume` on each wake.
 
 1. `before_nix`, with only host tools and Task.
 2. `provision-nix.sh`, setup only: installs Nix and direnv.
-3. `provision-shell.sh`: keeps the devshell active in login shells, after
-   environment loaders that providers append.
+3. `provision-shell.sh`: loads the devshell after provider environment loaders in project login shells and Amp's `/` startup shell, without changing the shell's directory. Other directories, including `$HOME` and project parents, stay inactive. Restart Amp after flake changes to refresh its inherited environment.
 4. `setup_auth` or `resume_auth` task, in the devshell.
 5. `work` task, in a reloaded devshell that sees fetched credentials.
 6. `setup_cleanup` task, setup only: runs on success or failure, outside the

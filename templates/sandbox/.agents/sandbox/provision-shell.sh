@@ -43,13 +43,18 @@ fi
 
 # NOTE: Unset DIRENV_FILE to force a reload. Keep DIRENV_DIFF so direnv reverts an inherited activation.
 {
-  printf "%s%s\nif [[ \$PWD == %q || \$PWD == %q/* ]]; then\n" "$kept" "$marker" "$PWD" "$PWD"
+  printf "%s%s\nif [[ \$PWD == / || \$PWD == %q || \$PWD == %q/* ]]; then\n" "$kept" "$marker" "$PWD" "$PWD"
   cat << 'EOF'
   [ -f "$HOME/.sandbox-env.sh" ] && . "$HOME/.sandbox-env.sh"
   if command -v direnv >/dev/null 2>&1; then
     unset DIRENV_FILE
-    direnv allow . >/dev/null 2>&1
-    eval "$(direnv export bash 2>/dev/null)"
+    eval "$(
+EOF
+  printf "      [[ \$PWD != / ]] || cd %q\n" "$PWD"
+  cat << 'EOF'
+      direnv allow . >/dev/null 2>&1
+      direnv export bash 2>/dev/null
+    )"
   fi
 fi
 EOF
